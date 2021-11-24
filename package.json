@@ -1,0 +1,8 @@
+{
+  "name": "field-validator-factory",
+  "version": "1.0.0",
+  "description": "Simple abstraction for field validation.",
+  "main": "index.js",
+  "author": "gabflima <gabriel.ferrugem.lima@gmail.com>",
+  "license": "MIT"
+}
