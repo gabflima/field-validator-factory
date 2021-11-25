@@ -1,45 +1,62 @@
+// The object containing all the validators and the validate() method
 const ValidatorManager = Object.create(null);
 
-function FieldValidatorFactory(builder, args){
-	if(builder.onValidate == undefined || builder.block == undefined){
-		return;
+
+/*  Exceptions  */
+function ValidatorBuilderFunctionNotFound(message) {
+   this.message = message;
+   this.name = "ValidatorBuilderFunctionNotFound";
+}
+
+function InvalidValidator(message) {
+   this.message = message;
+   this.name = "InvalidValidator";
+}
+
+
+/*  Factory  */
+function FieldValidatorFactory(validatorBuilder, args){
+	if(validatorBuilder.onValidate == undefined){
+		throw new ValidatorBuilderFunctionNotFound("validatorBuilder.onValidate.");
+	} else if(validatorBuilder.block == undefined){
+		throw new ValidatorBuilderFunctionNotFound("validatorBuilder.block.");
+	} else if(validatorBuilder.build == undefined){
+		throw new ValidatorBuilderFunctionNotFound("validatorBuilder.build.");
 	}
 	
-	let objBuilt = builder.build(args);
-	if(objBuilt == null){
-		return;
+	let validator = validatorBuilder.build(args);
+	if(validator == null){
+		throw new InvalidValidator("validatorBuilder.build return null.");
 	}
-	
-	let finalObject = null;
 	
 	if(ValidatorManager.validate == undefined){
-		Object.assign(ValidatorManager, objBuilt, {
-			store: [],
-			validate(){
-				let first = null;
+		validator = Object.assign(ValidatorManager, validator, {
+			validatorStore: [],
+			validate(){ // Start the validation process. 
+			            // Pass the validators with errors to this.onValidate.
+				    // @return {Boolean} If the process was sucessful.
+				let validatorsWithError = [];
 				let counter = 0, lastCounterValue = 0;
-				let validator = null;
-				for(let i = 0; i < this.store.length; i++){
-					validator = this.store[i];
+				for(let i = 0; i < this.validatorStore.length; i++){
+					const validator = this.validatorStore[i];
 					counter = validator.onValidate(counter);
+					
 					if(counter != lastCounterValue){
+						validatorsWithError.push(validator);
 						lastCounterValue = counter;
-						if(first == null){
-							first = validator;
-						}
 					}
 				}
-				return this.onValidate(first);
+				return this.onValidate(validatorsWithError);
 			}
 		});
-		finalObject = ValidatorManager;
 	}else{
-		finalObject = ValidatorManager.store[ValidatorManager.store.push(objBuilt) - 1];
+		validator.onValidate = validatorBuilder.onValidate;
+		ValidatorManager.validatorStore.push(validator);
 	}
-	finalObject.onValidate = builder.onValidate;
 	
-	if(builder.afterFieldFactory != undefined){
-		builder.afterFieldFactory(finalObject, args);
+	if(validatorBuilder.afterFieldFactory != undefined){
+		validatorBuilder.afterFieldFactory(validator, args);
 	}
-	builder.block(finalObject);
+	
+	validatorBuilder.block(validator);
 }
