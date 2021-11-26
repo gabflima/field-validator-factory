@@ -50,10 +50,9 @@ function FieldValidatorFactory(validatorBuilder, args){
 			}
 		});
 	}else{
-		validator.onValidate = validatorBuilder.onValidate;
 		ValidatorManager.validatorStore.push(validator);
 	}
-	
+	validator.onValidate = validatorBuilder.onValidate;
 	if(validatorBuilder.afterBuild != undefined){
 		validatorBuilder.afterBuild(validator, args);
 	}
