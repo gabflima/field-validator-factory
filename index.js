@@ -54,8 +54,8 @@ function FieldValidatorFactory(validatorBuilder, args){
 		ValidatorManager.validatorStore.push(validator);
 	}
 	
-	if(validatorBuilder.afterFieldFactory != undefined){
-		validatorBuilder.afterFieldFactory(validator, args);
+	if(validatorBuilder.afterBuild != undefined){
+		validatorBuilder.afterBuild(validator, args);
 	}
 	
 	validatorBuilder.block(validator);
